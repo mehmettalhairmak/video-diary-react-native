@@ -230,7 +230,13 @@ export const TrimTimeline: React.FC<Props> = ({
         ) : (
           <>
             {/* Top scale marks */}
-            <View className="mb-1 flex-row justify-between">
+            <View
+              style={{
+                width: widthUsed,
+                justifyContent: "space-between",
+                flexDirection: "row",
+              }}
+            >
               <Text className="text-[10px] text-gray-400">{formatTime(0)}</Text>
               <Text className="text-[10px] text-gray-400">
                 {formatTime(duration)}
@@ -241,8 +247,8 @@ export const TrimTimeline: React.FC<Props> = ({
             <View
               style={{
                 height: timelineHeight,
-                marginBottom: 20,
-                marginTop: 20,
+                marginBottom: 10,
+                marginTop: 100,
               }}
               className="relative w-full overflow-hidden rounded-md bg-black/20"
               pointerEvents="box-none"
@@ -311,7 +317,13 @@ export const TrimTimeline: React.FC<Props> = ({
             </View>
 
             {/* Bottom labels: selection start/end */}
-            <View className="mt-4 flex-row justify-between">
+            <View
+              style={{
+                width: widthUsed,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
               <Text className="text-[11px] text-gray-300">
                 {formatTime(start)}
               </Text>
