@@ -1,14 +1,8 @@
 import * as Haptics from "expo-haptics";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import { Skeleton } from "moti/skeleton";
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  LayoutChangeEvent,
-  Text,
-  View,
-} from "react-native";
+import { Dimensions, Image, LayoutChangeEvent, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -206,9 +200,6 @@ export const TrimTimeline: React.FC<Props> = ({
     left: x.value + selectionWidthSV.value,
     width: Math.max(0, widthSV.value - (x.value + selectionWidthSV.value)),
   }));
-  const selectionStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: x.value }],
-  }));
 
   const timelineHeight = Math.max(36, height - 24); // leave space for labels
   const itemWidth = count > 0 ? widthUsed / count : 0;
@@ -218,15 +209,45 @@ export const TrimTimeline: React.FC<Props> = ({
     <GestureDetector gesture={composedGesture}>
       <View onLayout={onLayout} className="w-full">
         {loading ? (
-          <View
-            style={{ height: "100%" }}
-            className="items-center justify-center"
-          >
-            <ActivityIndicator size="small" color="#f9d21a" />
-            <Text className="mt-2 text-xs text-gray-400">
-              Generating thumbnails…
-            </Text>
-          </View>
+          <Skeleton.Group show>
+            <View>
+              {/* Top scale marks skeleton */}
+              <View
+                className="mb-1 flex-row justify-between"
+                style={{
+                  width: widthUsed,
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                }}
+              >
+                <Skeleton width={64} height={14} radius={4} colorMode="light" />
+                <Skeleton width={64} height={14} radius={4} colorMode="light" />
+              </View>
+
+              {/* Timeline strip skeleton */}
+              <View style={{ marginTop: 100 }}>
+                <Skeleton
+                  width={widthUsed}
+                  height={timelineHeight}
+                  radius={8}
+                  colorMode="light"
+                />
+              </View>
+
+              {/* Bottom labels skeleton */}
+              <View
+                style={{
+                  width: widthUsed,
+                  marginTop: 6,
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                }}
+              >
+                <Skeleton width={64} height={14} radius={4} colorMode="light" />
+                <Skeleton width={64} height={14} radius={4} colorMode="light" />
+              </View>
+            </View>
+          </Skeleton.Group>
         ) : (
           <>
             {/* Top scale marks */}
