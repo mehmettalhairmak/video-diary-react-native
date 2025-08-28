@@ -8,6 +8,7 @@ import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
+import * as VideoThumbnails from "expo-video-thumbnails";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -107,20 +108,40 @@ export default function CropModal() {
       setSaving(true);
       const { uri } = await mutateAsync({ uri: picked, start, end });
       // Move to app documents for persistence if desired
-      const dest = FileSystem.documentDirectory + `clips/${uid()}.mp4`;
+      const id = uid();
+      const dest = FileSystem.documentDirectory + `clips/${id}.mp4`;
       await FileSystem.makeDirectoryAsync(
         FileSystem.documentDirectory + "clips",
         { intermediates: true }
       ).catch(() => {});
       await FileSystem.copyAsync({ from: uri, to: dest });
 
+      // Generate and persist a thumbnail for the trimmed clip
+      let thumbUri: string | undefined = undefined;
+      try {
+        const { uri: tmpThumb } = await VideoThumbnails.getThumbnailAsync(
+          dest,
+          { time: 0 }
+        );
+        const thumbsDir = FileSystem.documentDirectory + "thumbs";
+        await FileSystem.makeDirectoryAsync(thumbsDir, {
+          intermediates: true,
+        }).catch(() => {});
+        const finalThumb = `${thumbsDir}/${id}.jpg`;
+        await FileSystem.copyAsync({ from: tmpThumb, to: finalThumb });
+        thumbUri = finalThumb;
+      } catch (e) {
+        // best-effort; keep going without a thumbnail
+      }
+
       upsert({
-        id: uid(),
+        id,
         uri: dest,
         name: meta.name || "Untitled",
         description: meta.description,
         createdAt: Date.now(),
         duration: fixedLength,
+        thumbUri,
       });
       router.back();
     } catch (e: any) {

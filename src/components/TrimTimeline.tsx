@@ -212,20 +212,13 @@ export const TrimTimeline: React.FC<Props> = ({
           <Skeleton.Group show>
             <View>
               {/* Top scale marks skeleton */}
-              <View
-                className="mb-1 flex-row justify-between"
-                style={{
-                  width: widthUsed,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                }}
-              >
+              <View className="mb-1 flex-row justify-between">
                 <Skeleton width={64} height={14} radius={4} colorMode="light" />
                 <Skeleton width={64} height={14} radius={4} colorMode="light" />
               </View>
 
               {/* Timeline strip skeleton */}
-              <View style={{ marginTop: 100 }}>
+              <View className="mt-[100px]">
                 <Skeleton
                   width={widthUsed}
                   height={timelineHeight}
@@ -236,12 +229,8 @@ export const TrimTimeline: React.FC<Props> = ({
 
               {/* Bottom labels skeleton */}
               <View
-                style={{
-                  width: widthUsed,
-                  marginTop: 6,
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                }}
+                style={{ width: widthUsed }}
+                className="flex-row justify-between mt-1.5"
               >
                 <Skeleton width={64} height={14} radius={4} colorMode="light" />
                 <Skeleton width={64} height={14} radius={4} colorMode="light" />
@@ -252,11 +241,8 @@ export const TrimTimeline: React.FC<Props> = ({
           <>
             {/* Top scale marks */}
             <View
-              style={{
-                width: widthUsed,
-                justifyContent: "space-between",
-                flexDirection: "row",
-              }}
+              style={{ width: widthUsed }}
+              className="flex-row justify-between"
             >
               <Text className="text-[10px] text-gray-400">{formatTime(0)}</Text>
               <Text className="text-[10px] text-gray-400">
@@ -266,22 +252,18 @@ export const TrimTimeline: React.FC<Props> = ({
 
             {/* Timeline strip */}
             <View
-              style={{
-                height: timelineHeight,
-                marginBottom: 10,
-                marginTop: 100,
-              }}
-              className="relative w-full overflow-hidden rounded-md bg-black/20"
+              style={{ height: timelineHeight }}
+              className="relative w-full overflow-hidden mt-[100px] mb-2.5 rounded-md bg-black/20"
               pointerEvents="box-none"
             >
               {/* Thumbnails */}
               <View className="absolute inset-0" pointerEvents="none">
                 <View
                   style={{
-                    flexDirection: "row",
                     width: widthUsed,
                     height: timelineHeight,
                   }}
+                  className="flex-row"
                 >
                   {thumbs.length > 0
                     ? thumbs.map((u, i) => (
