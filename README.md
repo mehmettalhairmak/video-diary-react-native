@@ -16,12 +16,26 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+## VideoDiary
+
+React Native (Expo) Video Diary implementing: crop 5s segments, metadata, persistent list. Tech: Expo Router, Zustand + AsyncStorage, TanStack Query, expo-trim-video, NativeWind, expo-video.
+
+Quick start:
+
+1. Install deps (already in package.json). 2. Start dev server.
+
+Run:
+
+```sh
+npm start
+```
+
+Notes:
+- iOS/Android require dev build for expo-trim-video. Use: `npx expo run:ios` or `npx expo run:android` after installing pods/gradle.
+- Web is unsupported for trimming.
+
 In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
