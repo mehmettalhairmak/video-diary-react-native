@@ -1,7 +1,6 @@
 import { Container } from "@/src/domain/container";
 import { MetadataForm, TrimTimeline } from "@components";
 import { CLIP_FIXED_LENGTH_SECONDS } from "@constants";
-import { useKeyboardPadding } from "@hooks/useKeyboardPadding";
 import { useTrimVideo } from "@queries/useTrimVideo";
 import { generateAndPersistThumb, persistClip } from "@services/videoService";
 import { uid } from "@utils/ids";
@@ -40,7 +39,6 @@ export default function CropModal() {
   );
   const [meta, setMeta] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState<{ name?: string }>({});
-  const keyboardHeight = useKeyboardPadding(insets);
   const [saving, setSaving] = useState(false);
   const [thumbsLoading, setThumbsLoading] = useState(true);
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 });
@@ -294,19 +292,21 @@ export default function CropModal() {
       )}
       {step === 3 && (
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
           style={{ flex: 1 }}
+          contentContainerStyle={{ flex: 1 }}
+          enabled={true}
         >
           <ScrollView
             contentContainerStyle={{
               padding: 16,
-              paddingBottom: 32 + keyboardHeight,
+              paddingBottom:
+                Platform.OS === "android" ? 100 : 32 + (insets?.bottom || 0),
             }}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-            // extra inset for iOS so the bottom is always reachable
-            contentInset={{ bottom: keyboardHeight }}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "none"}
+            showsVerticalScrollIndicator={true}
           >
             <Text className="text-lg font-semibold mb-2">Add details</Text>
             <MetadataForm
