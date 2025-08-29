@@ -16,7 +16,9 @@
       "@services/*": ["./src/services/*"],
       "@lib/*": ["./src/lib/*"],
       "@queries/keys": ["./src/queries/keys.ts"],
-      "@validation/*": ["./src/validation/*"]
+      "@validation/*": ["./src/validation/*"],
+      "@domain/*": ["./src/domain/*"],
+      "@infra/*": ["./src/infrastructure/*"]
     }
   },
   "include": [

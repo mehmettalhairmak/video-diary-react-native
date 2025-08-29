@@ -1,9 +1,9 @@
+import { Container } from "@/src/domain/container";
 import { MetadataForm, TrimTimeline } from "@components";
 import { CLIP_FIXED_LENGTH_SECONDS } from "@constants";
 import { useKeyboardPadding } from "@hooks/useKeyboardPadding";
 import { useTrimVideo } from "@queries/useTrimVideo";
 import { generateAndPersistThumb, persistClip } from "@services/videoService";
-import { useVideoStore } from "@store/useVideoStore";
 import { uid } from "@utils/ids";
 import { clamp } from "@utils/time";
 import { metadataSchema } from "@validation/metadata";
@@ -46,7 +46,7 @@ export default function CropModal() {
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 });
   const tooShort = duration < fixedLength - 0.001;
 
-  const upsert = useVideoStore((s) => s.upsert);
+  const videoRepo = Container.videoRepo;
   const { mutateAsync, isPending } = useTrimVideo();
 
   // Player for preview and duration
@@ -108,7 +108,7 @@ export default function CropModal() {
       const dest = await persistClip(uri, id);
       const thumbUri = await generateAndPersistThumb(dest, id);
 
-      upsert({
+      await videoRepo.upsert({
         id,
         uri: dest,
         name: meta.name || "Untitled",
