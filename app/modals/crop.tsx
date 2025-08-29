@@ -9,10 +9,12 @@ import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import { Skeleton } from "moti/skeleton";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -40,6 +42,8 @@ export default function CropModal() {
   const [errors, setErrors] = useState<{ name?: string }>({});
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [thumbsLoading, setThumbsLoading] = useState(true);
+  const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 });
 
   const upsert = useVideoStore((s) => s.upsert);
   const { mutateAsync, isPending } = useTrimVideo();
@@ -169,17 +173,38 @@ export default function CropModal() {
           <Text className="text-lg font-semibold mb-2">
             Choose a 5s segment
           </Text>
-          <View className="w-full h-56 bg-black mb-4 rounded-md overflow-hidden">
-            <VideoView
-              player={player}
-              style={{ width: "100%", height: "100%" }}
-            />
+          <View
+            className="w-full h-56 bg-black mb-4 rounded-md overflow-hidden"
+            onLayout={(e) => {
+              const { width, height } = e.nativeEvent.layout;
+              setPreviewSize({ w: width, h: height });
+            }}
+          >
+            {thumbsLoading ? (
+              <View className="flex-1 items-center justify-center">
+                <Skeleton
+                  width={
+                    previewSize.w ||
+                    Math.max(1, Dimensions.get("window").width - 32)
+                  }
+                  height={previewSize.h || 224}
+                  radius={2}
+                  colorMode="light"
+                />
+              </View>
+            ) : (
+              <VideoView
+                player={player}
+                style={{ width: "100%", height: "100%" }}
+              />
+            )}
           </View>
           <TrimTimeline
             uri={picked}
             duration={duration}
             fixedLength={fixedLength}
             start={start}
+            onThumbsLoadingChange={setThumbsLoading}
             onChangeStart={(s) => {
               const clamped = clamp(s, 0, Math.max(0, duration - fixedLength));
               setStart(clamped);
@@ -201,79 +226,94 @@ export default function CropModal() {
             }}
           />
           <View className="mt-3 flex-row items-center justify-end">
-            <View className="flex-row items-center gap-2">
-              <Pressable
-                onPress={() => {
-                  const next = clamp(
-                    start - 0.5,
-                    0,
-                    Math.max(0, duration - fixedLength)
-                  );
-                  setStart(next);
-                  try {
-                    if (player) player.currentTime = next;
-                  } catch {}
-                }}
-                className="px-2 py-1 rounded border border-gray-300"
-              >
-                <Text className="text-xs">-0.5s</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  const next = clamp(
-                    start - 0.1,
-                    0,
-                    Math.max(0, duration - fixedLength)
-                  );
-                  setStart(next);
-                  try {
-                    if (player) player.currentTime = next;
-                  } catch {}
-                }}
-                className="px-2 py-1 rounded border border-gray-300"
-              >
-                <Text className="text-xs">-0.1s</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  const next = clamp(
-                    start + 0.1,
-                    0,
-                    Math.max(0, duration - fixedLength)
-                  );
-                  setStart(next);
-                  try {
-                    if (player) player.currentTime = next;
-                  } catch {}
-                }}
-                className="px-2 py-1 rounded border border-gray-300"
-              >
-                <Text className="text-xs">+0.1s</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  const next = clamp(
-                    start + 0.5,
-                    0,
-                    Math.max(0, duration - fixedLength)
-                  );
-                  setStart(next);
-                  try {
-                    if (player) player.currentTime = next;
-                  } catch {}
-                }}
-                className="px-2 py-1 rounded border border-gray-300"
-              >
-                <Text className="text-xs">+0.5s</Text>
-              </Pressable>
-            </View>
+            {thumbsLoading ? (
+              <View className="flex-row items-center gap-2">
+                <Skeleton width={44} height={28} radius={6} colorMode="light" />
+                <Skeleton width={44} height={28} radius={6} colorMode="light" />
+                <Skeleton width={44} height={28} radius={6} colorMode="light" />
+                <Skeleton width={44} height={28} radius={6} colorMode="light" />
+              </View>
+            ) : (
+              <View className="flex-row items-center gap-2">
+                <Pressable
+                  onPress={() => {
+                    const next = clamp(
+                      start - 0.5,
+                      0,
+                      Math.max(0, duration - fixedLength)
+                    );
+                    setStart(next);
+                    try {
+                      if (player) player.currentTime = next;
+                    } catch {}
+                  }}
+                  className="px-2 py-1 rounded border border-gray-300"
+                >
+                  <Text className="text-xs">-0.5s</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    const next = clamp(
+                      start - 0.1,
+                      0,
+                      Math.max(0, duration - fixedLength)
+                    );
+                    setStart(next);
+                    try {
+                      if (player) player.currentTime = next;
+                    } catch {}
+                  }}
+                  className="px-2 py-1 rounded border border-gray-300"
+                >
+                  <Text className="text-xs">-0.1s</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    const next = clamp(
+                      start + 0.1,
+                      0,
+                      Math.max(0, duration - fixedLength)
+                    );
+                    setStart(next);
+                    try {
+                      if (player) player.currentTime = next;
+                    } catch {}
+                  }}
+                  className="px-2 py-1 rounded border border-gray-300"
+                >
+                  <Text className="text-xs">+0.1s</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    const next = clamp(
+                      start + 0.5,
+                      0,
+                      Math.max(0, duration - fixedLength)
+                    );
+                    setStart(next);
+                    try {
+                      if (player) player.currentTime = next;
+                    } catch {}
+                  }}
+                  className="px-2 py-1 rounded border border-gray-300"
+                >
+                  <Text className="text-xs">+0.5s</Text>
+                </Pressable>
+              </View>
+            )}
           </View>
-          <Pressable
-            onPress={() => setStep(3)}
-            className="mt-6 bg-blue-600 px-6 py-3 rounded-md self-end"
-          >
-            <Text className="text-white font-semibold">Next</Text>
-          </Pressable>
+          {thumbsLoading ? (
+            <View className="mt-6 self-end">
+              <Skeleton width={120} height={40} radius={8} colorMode="light" />
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => setStep(3)}
+              className="mt-6 bg-blue-600 px-6 py-3 rounded-md self-end"
+            >
+              <Text className="text-white font-semibold">Next</Text>
+            </Pressable>
+          )}
         </ScrollView>
       )}
       {step === 3 && (

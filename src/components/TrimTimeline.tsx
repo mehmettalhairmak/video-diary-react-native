@@ -20,6 +20,7 @@ type Props = {
   frameCount?: number;
   onScrubStart?: () => void;
   onScrubEnd?: (s: number) => void;
+  onThumbsLoadingChange?: (loading: boolean) => void;
 };
 
 export const TrimTimeline: React.FC<Props> = ({
@@ -32,6 +33,7 @@ export const TrimTimeline: React.FC<Props> = ({
   frameCount = 12,
   onScrubStart,
   onScrubEnd,
+  onThumbsLoadingChange,
 }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [count, setCount] = useState(() =>
@@ -78,6 +80,11 @@ export const TrimTimeline: React.FC<Props> = ({
     // Reflect external start changes
     if (pxPerSec > 0) x.value = Math.max(0, Math.min(maxX, start * pxPerSec));
   }, [start, pxPerSec, maxX, x]);
+
+  // Notify parent when thumbnail loading state changes
+  useEffect(() => {
+    onThumbsLoadingChange?.(loading);
+  }, [loading, onThumbsLoadingChange]);
 
   // keep shared values in sync for worklets
   useEffect(() => {
