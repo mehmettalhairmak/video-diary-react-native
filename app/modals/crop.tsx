@@ -62,8 +62,6 @@ export default function CropModal() {
     return () => clearInterval(id);
   }, [player]);
 
-  // Keyboard padding is handled by the hook now
-
   const pickVideo = async () => {
     // Ask for permission if needed
     const perm = await ImagePicker.getMediaLibraryPermissionsAsync();
