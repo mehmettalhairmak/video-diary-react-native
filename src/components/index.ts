@@ -1,4 +1,7 @@
-export { MetadataForm } from "./MetadataForm";
-export { default as TrimTimeline } from "./TrimTimeline";
-export { VideoListItem } from "./VideoListItem";
-export { VideoPlayer } from "./VideoPlayer";
+// Molecules
+export { MetadataForm } from "./molecules/MetadataForm";
+export { VideoListItem } from "./molecules/VideoListItem";
+
+// Organisms
+export { default as TrimTimeline } from "./organisms/TrimTimeline";
+export { VideoPlayer } from "./organisms/VideoPlayer";

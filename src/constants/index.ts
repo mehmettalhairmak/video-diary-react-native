@@ -1,0 +1,1 @@
+export const CLIP_FIXED_LENGTH_SECONDS = 5;

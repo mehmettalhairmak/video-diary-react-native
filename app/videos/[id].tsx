@@ -1,8 +1,8 @@
-import { VideoPlayer } from '@components/VideoPlayer';
-import { useVideoStore } from '@store/useVideoStore';
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { VideoPlayer } from "@components";
+import { useVideoStore } from "@store/useVideoStore";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
+import React from "react";
+import { ScrollView, Text, View } from "react-native";
 
 export default function VideoDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,7 +21,10 @@ export default function VideoDetail() {
         ) : (
           <Text className="text-base text-gray-400">No description</Text>
         )}
-        <Link href={{ pathname: '/videos/edit/[id]', params: { id: item.id } }} asChild>
+        <Link
+          href={{ pathname: "/videos/edit/[id]", params: { id: item.id } }}
+          asChild
+        >
           <Text className="text-blue-600 mt-6">Edit details</Text>
         </Link>
       </ScrollView>

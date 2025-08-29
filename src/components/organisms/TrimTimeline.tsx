@@ -338,7 +338,7 @@ export const TrimTimeline: React.FC<Props> = ({
                 {formatTime(start)}
               </Text>
               <Text className="text-[11px] text-gray-300">
-                {formatTime(selectionEnd)}
+                {formatTime(Math.min(duration, start + fixedLength))}
               </Text>
             </View>
           </>

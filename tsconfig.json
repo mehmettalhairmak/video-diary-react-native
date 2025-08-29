@@ -3,27 +3,20 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@components/*": [
-        "./src/components/*"
-      ],
-      "@store/*": [
-        "./src/store/*"
-      ],
-      "@queries/*": [
-        "./src/queries/*"
-      ],
-      "@types/*": [
-        "./src/types/*"
-      ],
-      "@types": [
-        "./src/types/index.ts"
-      ],
-      "@utils/*": [
-        "./src/utils/*"
-      ]
+      "@/*": ["./*"],
+      "@components/*": ["./src/components/*"],
+      "@components": ["./src/components/index.ts"],
+      "@store/*": ["./src/store/*"],
+      "@queries/*": ["./src/queries/*"],
+      "@types/*": ["./src/types/*"],
+      "@types": ["./src/types/index.ts"],
+      "@utils/*": ["./src/utils/*"],
+      "@constants": ["./src/constants/index.ts"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@services/*": ["./src/services/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@queries/keys": ["./src/queries/keys.ts"],
+      "@validation/*": ["./src/validation/*"]
     }
   },
   "include": [

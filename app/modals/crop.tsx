@@ -1,21 +1,21 @@
-import { MetadataForm } from "@components/MetadataForm";
-import TrimTimeline from "@components/TrimTimeline";
+import { MetadataForm, TrimTimeline } from "@components";
+import { CLIP_FIXED_LENGTH_SECONDS } from "@constants";
+import { useKeyboardPadding } from "@hooks/useKeyboardPadding";
 import { useTrimVideo } from "@queries/useTrimVideo";
+import { generateAndPersistThumb, persistClip } from "@services/videoService";
 import { useVideoStore } from "@store/useVideoStore";
 import { uid } from "@utils/ids";
 import { clamp } from "@utils/time";
-import * as FileSystem from "expo-file-system";
+import { metadataSchema } from "@validation/metadata";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
-import * as VideoThumbnails from "expo-video-thumbnails";
 import { Skeleton } from "moti/skeleton";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -24,7 +24,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { z } from "zod";
 
 export default function CropModal() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function CropModal() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [picked, setPicked] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(30);
-  const fixedLength = 5; // seconds
+  const fixedLength = CLIP_FIXED_LENGTH_SECONDS;
   const [start, setStart] = useState(0);
   const end = useMemo(
     () => clamp(start + fixedLength, 0, duration),
@@ -40,7 +39,7 @@ export default function CropModal() {
   );
   const [meta, setMeta] = useState({ name: "", description: "" });
   const [errors, setErrors] = useState<{ name?: string }>({});
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardPadding(insets);
   const [saving, setSaving] = useState(false);
   const [thumbsLoading, setThumbsLoading] = useState(true);
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 });
@@ -63,27 +62,7 @@ export default function CropModal() {
     return () => clearInterval(id);
   }, [player]);
 
-  // Track keyboard to avoid covering the footer button
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-    const onShow = (e: any) => {
-      const kh = e?.endCoordinates?.height ?? 0;
-      // subtract safe area bottom so we only pad for the overlapped area
-      setKeyboardHeight(Math.max(0, kh - (insets?.bottom || 0)));
-    };
-    const onHide = () => setKeyboardHeight(0);
-
-    const subShow = Keyboard.addListener(showEvent as any, onShow);
-    const subHide = Keyboard.addListener(hideEvent as any, onHide);
-    return () => {
-      subShow.remove();
-      subHide.remove();
-    };
-  }, [insets?.bottom]);
+  // Keyboard padding is handled by the hook now
 
   const pickVideo = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
@@ -97,11 +76,7 @@ export default function CropModal() {
 
   const onTrim = async () => {
     if (!picked) return;
-    const schema = z.object({
-      name: z.string().min(1, "Name is required"),
-      description: z.string().optional(),
-    });
-    const parsed = schema.safeParse(meta);
+    const parsed = metadataSchema.safeParse(meta);
     if (!parsed.success) {
       const issue = parsed.error.issues.find((i) => i.path[0] === "name");
       setErrors({ name: issue?.message });
@@ -111,32 +86,9 @@ export default function CropModal() {
     try {
       setSaving(true);
       const { uri } = await mutateAsync({ uri: picked, start, end });
-      // Move to app documents for persistence if desired
       const id = uid();
-      const dest = FileSystem.documentDirectory + `clips/${id}.mp4`;
-      await FileSystem.makeDirectoryAsync(
-        FileSystem.documentDirectory + "clips",
-        { intermediates: true }
-      ).catch(() => {});
-      await FileSystem.copyAsync({ from: uri, to: dest });
-
-      // Generate and persist a thumbnail for the trimmed clip
-      let thumbUri: string | undefined = undefined;
-      try {
-        const { uri: tmpThumb } = await VideoThumbnails.getThumbnailAsync(
-          dest,
-          { time: 0 }
-        );
-        const thumbsDir = FileSystem.documentDirectory + "thumbs";
-        await FileSystem.makeDirectoryAsync(thumbsDir, {
-          intermediates: true,
-        }).catch(() => {});
-        const finalThumb = `${thumbsDir}/${id}.jpg`;
-        await FileSystem.copyAsync({ from: tmpThumb, to: finalThumb });
-        thumbUri = finalThumb;
-      } catch (e) {
-        console.error("Failed to generate thumbnail:", e);
-      }
+      const dest = await persistClip(uri, id);
+      const thumbUri = await generateAndPersistThumb(dest, id);
 
       upsert({
         id,
