@@ -1,9 +1,16 @@
 module.exports = function (api) {
-  api.cache(true);
+  const isTest =
+    process.env.NODE_ENV === "test" || !!process.env.JEST_WORKER_ID;
+  api.cache(() => (isTest ? "test" : "prod"));
   return {
     presets: [
-      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-      "nativewind/babel",
+      [
+        "babel-preset-expo",
+        { jsxImportSource: isTest ? "react" : "nativewind" },
+      ],
+      // NativeWind's babel plugin injects CSS interop which breaks Jest's mock factory scoping.
+      // Exclude it in test environment.
+      ...(!isTest ? ["nativewind/babel"] : []),
     ],
   };
 };

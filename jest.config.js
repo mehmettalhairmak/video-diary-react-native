@@ -1,0 +1,43 @@
+module.exports = {
+  preset: "jest-expo",
+  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
+  transformIgnorePatterns: [
+    "node_modules/(?!(react-native-reanimated|react-native|@react-native|expo(nent)?|@expo|unimodules|nativewind|moti|@react-navigation|react-navigation|expo-.*|@react-native-.*)/)",
+  ],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/index.ts",
+    "!src/types/**",
+  ],
+  coverageThreshold: {
+    global: {
+      statements: 70,
+      branches: 55,
+      functions: 65,
+      lines: 75,
+    },
+  },
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/$1",
+    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@components$": "<rootDir>/src/components/index.ts",
+    "^@store/(.*)$": "<rootDir>/src/store/$1",
+    "^@queries/(.*)$": "<rootDir>/src/queries/$1",
+    "^@types/(.*)$": "<rootDir>/src/types/$1",
+    "^@types$": "<rootDir>/src/types/index.ts",
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
+    "^@constants$": "<rootDir>/src/constants/index.ts",
+    "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
+    "^@services/(.*)$": "<rootDir>/src/services/$1",
+    "^@lib/(.*)$": "<rootDir>/src/lib/$1",
+    "^@queries/keys$": "<rootDir>/src/queries/keys.ts",
+    "^@validation/(.*)$": "<rootDir>/src/validation/$1",
+    "^@domain/(.*)$": "<rootDir>/src/domain/$1",
+    "^@infra/(.*)$": "<rootDir>/src/infrastructure/$1",
+    "\\.(png|jpg|jpeg|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js",
+    "react-native-css-interop": "<rootDir>/__mocks__/rnCssInteropMock.js",
+  },
+};
