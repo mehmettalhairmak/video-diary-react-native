@@ -8,6 +8,7 @@ import { uid } from "@utils/ids";
 import { clamp } from "@utils/time";
 import { metadataSchema } from "@validation/metadata";
 import * as ImagePicker from "expo-image-picker";
+import * as Linking from "expo-linking";
 import { Stack, useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { Skeleton } from "moti/skeleton";
@@ -43,6 +44,7 @@ export default function CropModal() {
   const [saving, setSaving] = useState(false);
   const [thumbsLoading, setThumbsLoading] = useState(true);
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 });
+  const tooShort = duration < fixedLength - 0.001;
 
   const upsert = useVideoStore((s) => s.upsert);
   const { mutateAsync, isPending } = useTrimVideo();
@@ -65,6 +67,22 @@ export default function CropModal() {
   // Keyboard padding is handled by the hook now
 
   const pickVideo = async () => {
+    // Ask for permission if needed
+    const perm = await ImagePicker.getMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      const req = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!req.granted) {
+        Alert.alert(
+          "İzin gerekli",
+          "Galeriye erişim olmadan video seçilemez. Ayarlardan izin verebilirsin.",
+          [
+            { text: "İptal", style: "cancel" },
+            { text: "Ayarları Aç", onPress: () => Linking.openSettings() },
+          ]
+        );
+        return;
+      }
+    }
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
     });
@@ -260,11 +278,17 @@ export default function CropModal() {
             </View>
           ) : (
             <Pressable
+              disabled={tooShort}
               onPress={() => setStep(3)}
-              className="mt-6 bg-blue-600 px-6 py-3 rounded-md self-end"
+              className={`mt-6 px-6 py-3 rounded-md self-end ${tooShort ? "bg-gray-300" : "bg-blue-600"}`}
             >
               <Text className="text-white font-semibold">Next</Text>
             </Pressable>
+          )}
+          {!thumbsLoading && tooShort && (
+            <Text className="mt-2 text-xs text-red-600 self-end">
+              Video 5 saniyeden kısa. Bu videodan klip oluşturulamaz.
+            </Text>
           )}
         </ScrollView>
       )}

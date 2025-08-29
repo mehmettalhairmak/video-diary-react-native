@@ -17,6 +17,10 @@ export async function persistClip(tempUri: string, id: string) {
   await ensureDirs();
   const dest = `${CLIPS_DIR}/${id}.mp4`;
   await FileSystem.copyAsync({ from: tempUri, to: dest });
+  // Best-effort cleanup of temp file to save disk space
+  try {
+    await FileSystem.deleteAsync(tempUri, { idempotent: true });
+  } catch {}
   return dest;
 }
 
