@@ -135,7 +135,7 @@ export default function CropModal() {
         await FileSystem.copyAsync({ from: tmpThumb, to: finalThumb });
         thumbUri = finalThumb;
       } catch (e) {
-        // best-effort; keep going without a thumbnail
+        console.error("Failed to generate thumbnail:", e);
       }
 
       upsert({
