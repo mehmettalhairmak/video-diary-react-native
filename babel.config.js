@@ -12,5 +12,7 @@ module.exports = function (api) {
       // Exclude it in test environment.
       ...(!isTest ? ["nativewind/babel"] : []),
     ],
+  // Reanimated plugin must be last and is not needed in tests
+  plugins: [...(!isTest ? ["react-native-reanimated/plugin"] : [])],
   };
 };

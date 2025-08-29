@@ -1,3 +1,7 @@
+/**
+ * Lightweight video player wrapper around expo-video.
+ * Props: uri (required), optional autoPlay/loop, and className for layout.
+ */
 import { VideoView, useVideoPlayer } from "expo-video";
 import React from "react";
 import { View } from "react-native";
