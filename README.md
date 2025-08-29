@@ -1,64 +1,177 @@
-# Welcome to your Expo app 👋
+# Video Diary – React Native (Expo) 🚀
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple, performant, and scalable Video Diary app. Users can:
 
-## Get started
+- Import a video from the device
+- Select a 5-second segment with a scrubber (crop)
+- Add name and description
+- Save and view cropped videos later
 
-1. Install dependencies
+Built with modern React Native practices and a clean architecture mindset.
 
-   ```bash
-   npm install
-   ```
+## ✨ Features
 
-2. Start the app
+- Main Screen: Persistent list of cropped videos with thumbnails; tap to open details
+- Crop Modal (3-step flow):
+  1. Select a video from gallery
+  2. Choose a 5-second segment using a timeline scrubber and proceed
+  3. Fill metadata and save (cropping happens via a mutation)
+- Details Page: Minimal player with name and description
+- Edit Page (optional): Update name/description of a saved clip
 
-   ```bash
-   npx expo start
-   ```
+## 🧰 Tech Stack
 
-## VideoDiary
+- Framework: Expo + Expo Router
+- State: Zustand + AsyncStorage (persisted store)
+- Async/Server: TanStack Query (mutations for cropping)
+- Media: expo-trim-video (core cropping), expo-video (playback), expo-video-thumbnails
+- UI: NativeWind (Tailwind-in-RN), Safe Area, minimal design
+- Validation: Zod (metadata form)
+- Animations: React Native Reanimated (used in TrimTimeline), Haptics
+- Language/Build: TypeScript, Metro, Babel
 
-React Native (Expo) Video Diary implementing: crop 5s segments, metadata, persistent list. Tech: Expo Router, Zustand + AsyncStorage, TanStack Query, expo-trim-video, NativeWind, expo-video.
+## 📁 Project Structure
 
-Quick start:
+```
+app/                     # Expo Router routes (index, details, crop modal, edit)
+src/
+  components/            # UI building blocks
+    molecules/           # MetadataForm, etc.
+    organisms/           # TrimTimeline, VideoPlayer, etc.
+  constants/             # Constants (e.g., fixed clip length)
+  domain/                # Container & abstractions (repositories)
+  infrastructure/        # Repository implementations (Zustand)
+  lib/                   # Query Client, misc libs
+  queries/               # React Query hooks
+  services/              # File/thumbnail persistence helpers
+  store/                 # Zustand store (persisted)
+  types/                 # Shared types
+  utils/                 # Helpers (ids/time)
+  validation/            # Zod schemas
+```
 
-1. Install deps (already in package.json). 2. Start dev server.
+Notable decisions:
 
-Run:
+- Trim UI is an isolated `TrimTimeline` with thumbnails, pinch-to-density and drag gestures (mocked in tests)
+- Repo pattern (`domain` + `infrastructure`) over direct store coupling
+- Persisted list via Zustand + AsyncStorage for simplicity and speed
+
+## 🚀 Getting Started
+
+1. Install deps
+
+```sh
+npm install
+```
+
+2. Create a dev build (required for expo-trim-video)
+
+```sh
+# iOS
+npx expo run:ios
+
+# Android
+npx expo run:android
+```
+
+3. Start the Metro bundler
 
 ```sh
 npm start
 ```
 
 Notes:
-- iOS/Android require dev build for expo-trim-video. Use: `npx expo run:ios` or `npx expo run:android` after installing pods/gradle.
-- Web is unsupported for trimming.
 
-In the output, you'll find options to open the app in a
+- Cropping is not supported on web – use a native dev build.
+- On iOS, ensure pods are installed by running the `run:ios` command above.
 
+## 🔧 Native builds and expo prebuild
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+You usually don’t need to run `expo prebuild` manually: `npx expo run:ios|android` will prebuild when required. Run it yourself when:
 
-## Get a fresh project
+- You add a new native module (any package that isn’t pure JS or uses a config plugin)
+- You change native config in `app.json`/`app.config.ts` (e.g., permissions, icons, plugins)
+- You upgrade the Expo SDK or make large native changes and want to regenerate `ios/` and `android/`
 
-When you're ready, run:
+Common commands:
 
-```bash
-npm run reset-project
+```sh
+# Generate native projects for both platforms (if needed)
+npx expo prebuild
+
+# Platform-specific
+npx expo prebuild -p ios
+npx expo prebuild -p android
+
+# Clean regenerate native projects (fixes many mismatch issues)
+npx expo prebuild --clean
+
+# Then run a dev build
+npx expo run:ios
+npx expo run:android
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Notes:
 
-## Learn more
+- `run:ios`/`run:android` will also install CocoaPods as needed; only run `cd ios && pod install` if you build directly via Xcode.
+- Prebuild overwrites files under `ios/` and `android/`. Prefer config plugins; avoid manual edits unless you intend to maintain a custom native fork.
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🧪 Testing
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Runner: Jest (jest-expo preset)
+- UI: React Native Testing Library
+- Mocks: Native modules (expo-video, expo-trim-video, thumbnails, reanimated, gesture-handler, safe area, AsyncStorage)
+- Coverage thresholds (enforced):
+  - statements ≥ 70%, branches ≥ 55%, functions ≥ 65%, lines ≥ 75%
 
-## Join the community
+Run tests:
 
-Join our community of developers creating universal apps.
+```sh
+npm test
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Highlights:
+
+- Behavior tests for Crop modal flow and timeline labels
+- Hook and service tests (trim mutation, file ops)
+- Store/repository unit tests
+
+## 🧭 User Flow
+
+1. From the main screen, tap + to open the Crop modal
+2. Select a video (Step 1)
+3. Choose a fixed 5s segment using the timeline (Step 2) and tap Next
+4. Add name/description and Save (Step 3)
+5. The cropped clip is persisted and appears in the main list; tap to view details
+
+## ⚙️ Implementation Details
+
+- Cropping: `useTrimVideo` mutation wraps `expo-trim-video` for async reliability
+- Persistence: Clips and thumbs copied into app document directories
+- Thumbnails: Generated with `expo-video-thumbnails` and stored for fast list rendering
+- Validation: Zod schema ensures required name before saving
+- Styling: NativeWind `className` for concise styles
+
+## 📈 Scalability & Performance
+
+- Separation of concerns (domain/infrastructure/services) for easy swaps (e.g., SQLite instead of AsyncStorage)
+- React Query for background work and retry control
+- Thumbnails and fixed-length cropping keep UI responsive and predictable
+
+## 💡 Optional Enhancements
+
+- Replace AsyncStorage with Expo SQLite for structured queries and large lists
+- Add richer animations with Reanimated (transitions, scroll effects)
+- Add delete/rename actions on list items
+- Wire up CI to run tests and coverage checks on PRs
+
+## 🛠️ Troubleshooting
+
+- Trimming doesn’t run on web: use native dev builds (`npx expo run:ios|android`).
+- iOS Pods/Android Gradle: `run:ios`/`run:android` handles build setup.
+- Jest fails on reanimated/moti: the project includes robust test mocks; if customizing, ensure `react-native-reanimated` is allowed in `transformIgnorePatterns` and `moti/skeleton` is neutralized in tests.
+- Watchman recrawl warnings on macOS: you can reset watches if needed:
+
+```sh
+watchman watch-del "$(pwd)"; watchman watch-project "$(pwd)"
+```

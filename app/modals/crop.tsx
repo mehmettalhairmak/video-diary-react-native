@@ -11,6 +11,10 @@ import * as Linking from "expo-linking";
 import { Stack, useRouter } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { Skeleton } from "moti/skeleton";
+/**
+ * CropModal — 3-step flow: pick → trim (fixed 5s) → metadata → save.
+ * Orchestrates trim mutation, persistence and repository upsert.
+ */
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -47,7 +51,7 @@ export default function CropModal() {
   const videoRepo = Container.videoRepo;
   const { mutateAsync, isPending } = useTrimVideo();
 
-  // Player for preview and duration
+  // Player for preview and to probe duration
   const player = useVideoPlayer(picked, (p) => {
     p.loop = true;
   });
@@ -63,7 +67,7 @@ export default function CropModal() {
   }, [player]);
 
   const pickVideo = async () => {
-    // Ask for permission if needed
+    // Ensure permission
     const perm = await ImagePicker.getMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       const req = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -174,7 +178,7 @@ export default function CropModal() {
             onChangeStart={(s) => {
               const clamped = clamp(s, 0, Math.max(0, duration - fixedLength));
               setStart(clamped);
-              // live seek on change for smoother UX
+              // Live seek on change for smoother UX
               try {
                 if (player) player.currentTime = clamped;
               } catch {}

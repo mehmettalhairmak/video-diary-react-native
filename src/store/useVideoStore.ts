@@ -1,3 +1,8 @@
+/**
+ * Persisted video list store.
+ * - Items stored in AsyncStorage under key `video-diary-items`.
+ * - Public API mirrors repository operations (upsert/updateMeta/remove/clearAll).
+ */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { VideoItem } from "@types";
 import { create } from "zustand";

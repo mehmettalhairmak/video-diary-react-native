@@ -10,6 +10,18 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 
+/**
+ * Fixed-length timeline selector with thumbnail strip.
+ *
+ * Props:
+ * - uri: source video uri
+ * - duration: full video length (s)
+ * - fixedLength: selection length (s)
+ * - start: left edge (s)
+ * - onChangeStart: called live while dragging (s)
+ * - onScrubStart/onScrubEnd: lifecycle around pan gesture
+ * - onThumbsLoadingChange: signals when thumbs are being generated
+ */
 type Props = {
   uri: string;
   duration: number; // seconds
@@ -46,7 +58,7 @@ export const TrimTimeline: React.FC<Props> = ({
     setContainerWidth(e.nativeEvent.layout.width);
   };
 
-  // Use a fallback width so things render even if onLayout hasn't run yet (e.g., inside ScrollView)
+  // Fallback width so it renders even before onLayout (e.g., in ScrollView)
   const fallbackWidth = useMemo(
     () => Math.max(1, Dimensions.get("window").width - 32),
     []
@@ -69,7 +81,7 @@ export const TrimTimeline: React.FC<Props> = ({
     [widthUsed, selectionWidth]
   );
 
-  // Reanimated shared value for selection left X
+  // Reanimated shared values used inside worklets
   const x = useSharedValue(0);
   const pxPerSecSV = useSharedValue(0);
   const maxXSV = useSharedValue(0);
@@ -77,16 +89,16 @@ export const TrimTimeline: React.FC<Props> = ({
   const selectionWidthSV = useSharedValue(0);
 
   useEffect(() => {
-    // Reflect external start changes
+    // Reflect external start prop changes
     if (pxPerSec > 0) x.value = Math.max(0, Math.min(maxX, start * pxPerSec));
   }, [start, pxPerSec, maxX, x]);
 
-  // Notify parent when thumbnail loading state changes
+  // Signal parent when thumbnail loading changes
   useEffect(() => {
     onThumbsLoadingChange?.(loading);
   }, [loading, onThumbsLoadingChange]);
 
-  // keep shared values in sync for worklets
+  // Keep shared values in sync for worklets
   useEffect(() => {
     pxPerSecSV.value = pxPerSec;
   }, [pxPerSec]);
